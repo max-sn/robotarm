@@ -1,0 +1,940 @@
+% \iffalse meta-comment
+% 
+% Copyright (C) 2021 by M.J.W. Snippe
+% -----------------------------------
+% 
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+% 
+%     http://www.latex-project.org/lppl.txt
+% 
+% and version 1.3 or later is part of all distributions of LaTeX
+% version 2005/12/01 or later.
+% 
+% This work has the LPPL maintenance status `author-maintained'.
+% 
+% This work consists of the files found at github.com/max-sn/robotarm.
+% 
+% \fi
+%
+% \iffalse
+%<*driver>
+\documentclass{ltxdoc}
+\input{robotarm.doc.settings.sty}
+\EnableCrossrefs
+\RecordChanges
+\begin{document}
+  \DocInput{robotarm.dtx}
+\end{document}
+%</driver>
+%
+% \fi
+%
+% \iffalse
+%
+%<*robotarm-doc-settings>
+
+\usepackage[utf8]{inputenc}
+\usepackage{xspace}
+\usepackage{multicol}
+\usepackage{geometry}
+\usepackage{mathpazo}
+\usepackage{robotarm}
+\usepackage{biblatex}
+\usepackage{hypdoc}
+\usepackage{tcolorbox}
+
+\addbibresource{robotarm.doc.bib.bib}
+\defbibheading{robotarmbibheading}[\bibname]{%
+  \clearpage\section*{#1}\addcontentsline{toc}{section}{#1}}
+
+\geometry{pass}
+
+\tcbuselibrary{documentation,breakable,minted}
+\tcbset{
+  index german settings,
+  index colorize,
+  docexample/.append style={
+    before lower={\begin{center}\begin{tikzpicture}},
+    after lower={\end{tikzpicture}\end{center}},
+    documentation minted options={autogobble},
+    breakable,
+  }
+}
+
+\makeindex
+
+\renewcommand{\MacroFont}{\color{black!70!blue}\small\ttfamily}
+
+\def\robotarmpackage{\textsl{robotarm}\xspace}
+\def\Tikz{{\normalfont Ti\textit{k}Z}\xspace}
+
+%</robotarm-doc-settings>
+%
+%<*robotarm-doc-main>
+
+\title{The \robotarmpackage package}
+\author{Marcus J.W. Snippe \\
+  \normalsize\href{mailto:maxsnippe@gmail.nl}
+  {\texttt{maxsnippe[at]gmail.nl}}}
+\date{\filedate\\[0.4em]\normalsize\fileversion}
+
+\maketitle
+
+\begin{abstract}
+  With the \robotarmpackage package, you can draw configurable planar robot arms with ease, using \Tikz. It defines the macro (\refCom{robotArm}) and a lot of ways to configure it. Additionally, you can use or redefine the macros used to draw the base link (\refCom{robotArmBaseLink}), a single link (\refCom{robotArmLink}), or the end effector (\refCom{robotArmEndEffector}).
+\end{abstract}
+
+\begin{multicols}{2}
+  \tableofcontents
+\end{multicols}
+
+\section{Macros}
+
+  \subsection{\texttt{robotArm}}
+
+    \begin{docCommand}{robotArm}{\oarg{key-value list}\marg{num}}
+      This is the main macro of the \robotarmpackage package. It is meant to be used in the \texttt{tikzpicture} environment\footnote{The first example still includes the \texttt{tikzpicture} environment, but for following examples,it will be omitted in the example code.}, from the \Tikz\cite{tantau:tikz_and_pgf} package,
+      and installs some styles for additional drawing, e.g. \refKey{/tikz/in link}.
+
+      \begin{dispExample*}{before lower={}, after lower={}}
+        \begin{tikzpicture}
+          \robotArm[config={q1=60,q2=-40,q3=-50}]{3}
+        \end{tikzpicture}
+      \end{dispExample*}
+
+      \meta{num} defines the number of links that will be drawn. For an $N$ link robot arm, the $N$\textsuperscript{th} link will be the end effector link.
+      
+      The \meta{key-value list} values can consist of the keys listed below.
+
+      
+
+      \begin{docKey}{geometry}{=\meta{key-value list}}{}
+
+        The \refKey{geometry} key can be used to set geometrical configuration options of the robot arm, e.g. link length and link width. The keys in \meta{key-value list} can be one or more of the following.
+
+        ^^A \begin{docKey}[][doc label=/geometry/a0]{a0}{=\meta{value}}{initially \texttt{0.0}}
+        ^^A   Sets the height of the base link.
+
+        ^^A   \begin{dispExample}
+        ^^A     \robotArm[config={q1=60},geometry={a0=2}]{2}
+        ^^A   \end{dispExample}
+        ^^A \end{docKey}
+
+        \begin{docKeys}
+          [
+            doc parameter={=\meta{value}},
+          ]
+          {
+            {
+              doc name=a,
+              doc label=/geometry/a,
+              doc description={initially \texttt{2}}
+            },
+            {
+              doc name=a\meta{num},
+              doc label=/geometry/anum,
+              doc description={initially the value of \refKey{/geometry/a}}
+            },
+          }
+
+          The \refKey{/geometry/a} key sets the default length for all links that are drawn in the \refCom{robotArm} command. For every link, this can be overruled by the dynamically created keys \refKey{/geometry/anum}, e.g. to set only the length of link 3 to 3, use \texttt{a3=3}.
+
+          \begin{dispExample}
+            \robotArm[config={q1=20,q2=-20,q3=-20},
+              geometry={a=3,a3=1}]{3}
+          \end{dispExample}
+        \end{docKeys}
+
+        \begin{docKeys}
+          [
+            doc parameter={=\meta{value}}
+          ]
+          {
+            {
+              doc name=r,
+              doc label=/geometry/r,
+              doc description={initially \texttt{0.25}}
+            },
+            {
+              doc name=r\meta{num},
+              doc label=/geometry/rnum,
+              doc description={initially the value of \refKey{/geometry/r}}
+            },
+          }
+          The \refKey{/geometry/r} key sets the default joint radius for all links drawn in the \refCom{robotArm} command. For every link this can be overruled by the dynamically created keys \refKey{/geometry/rnum}.
+
+          \begin{dispExample}
+            \robotArm[config={q1=20,q2=-20},
+              geometry={r=0.5,r1=0.3}]{2}
+          \end{dispExample}
+        \end{docKeys}
+
+        \begin{docKeys}
+          [
+            doc parameter={=\meta{value}}
+          ]
+          {
+            {
+              doc name=w,
+              doc label=/geometry/w,
+              doc description={initially \texttt{0.4}}
+            },
+            {
+              doc name=w\meta{num},
+              doc label=/geometry/wnum,
+              doc description={initially the value of \refKey{/geometry/w}}
+            },
+          }
+          The \refKey{/geometry/w} key sets the default link width for all links drawn in the \refCom{robotArm} command. For every link this can be overruled by the dynamically created keys \refKey{/geometry/wnum}.
+        \end{docKeys}
+
+      \end{docKey}
+
+      \begin{dispExample}
+        \tikzset{/robotarm/geometry={a=1}}
+        \robotArm{1}
+        \begin{scope}[xshift=3cm]
+          \robotArm{6}
+        \end{scope}
+      \end{dispExample}
+    
+      \begin{docKey}[robotarm/styles]{link}{}{default \texttt{draw,fill=lightgray}}
+      \end{docKey}
+
+    \end{docCommand}
+
+  \subsection{\texttt{robotArmBaseLink}}
+
+    \begin{docCommand}{robotArmBaseLink}{\oarg{key-value list}}
+      This command is used in \refCom{robotArm} to draw the base link. It can also be used to draw your own base link. The default base link looks as follows:
+      \begin{dispExample}
+        \robotArmBaseLink
+      \end{dispExample}
+      The \meta{key-value list} can consist of the keys listed below.
+
+      \begin{docKeys}
+        [
+          doc keypath={robotarm/base link},
+          doc parameter={=\meta{value}},
+        ]
+        {
+          {
+            doc name=height,
+            doc description={initially \texttt{0.6}}
+          },
+          {
+            doc name=width,
+            doc description={initially \texttt{0.3}}
+          },
+        }
+        The width and height of the base link can be specified with these keys. The height is measured from the center of the half-circle at the top, to the base.
+        \begin{dispExample}
+          \robotArmBaseLink[width=1, height=0.6]
+        \end{dispExample}
+      \end{docKeys}
+
+      \begin{docKeys}
+        [
+          doc keypath={robotarm/base link},
+          doc parameter={=\meta{value}},
+        ]
+        {
+          {
+            doc name=world width,
+            doc description={initially \texttt{1.0}},
+          },
+          {
+            doc name=world height,
+            doc description={initially \texttt{0.3}},
+          }
+        }
+        The width and height of the `world' drawn below the base link can be specified with these keys.
+        \begin{dispExample}
+          \robotArmBaseLink[world width=5, world height=1]
+        \end{dispExample}
+      \end{docKeys}
+      
+      \begin{docKeys}
+        [
+          doc keypath={robotarm/base link},
+          doc description={code executing key},
+        ]
+        {
+          {doc name=draw base link},
+          {doc name=draw world},
+        }
+        These keys are used to draw the `world' and the base link. If the configuration options above are insufficient, you can redefine these keys, as shown in the not-so-creative example below.
+        \begin{dispExample}
+          \robotArmBaseLink[
+            draw world/.code={
+              \filldraw[fill=brown] (-2,-1) rectangle (2, -0.3);
+            },
+            draw base link/.code={
+              \filldraw[fill=black!60] (-0.5, -0.3) rectangle
+                (0.5, 0.3);
+            }]
+        \end{dispExample}
+        To access the values of the keys listed above you can use the following macros in your redefinition: 
+        \begin{itemize}
+          \item \docAuxCommand{RA@baselink@width},
+          \item \docAuxCommand{RA@baselink@height},
+          \item \docAuxCommand{RA@baselink@worldwidth}, and
+          \item \docAuxCommand{RA@baselink@worldheight}.
+        \end{itemize}
+      \end{docKeys}
+
+    \end{docCommand}
+
+
+  \subsection{\texttt{robotArmLink}}
+
+    \begin{docCommand}{robotArmLink}{\oarg{key-value list}}
+      This command is used in \refCom{robotArm} to draw the links in a \texttt{foreach} loop. It can also be used to draw your own link(s). The default link looks as follows:
+      \begin{dispExample}
+        \robotArmLink
+      \end{dispExample}
+      The \meta{key-value list} can consist of the keys listed below.
+
+      \begin{docKeys}
+        [
+          doc keypath={robotarm/link},
+          doc parameter={=\meta{value}},
+        ]{
+          {
+            doc name=width,
+            doc description={initially \texttt{0.4}},
+          },
+          {
+            doc name=length,
+            doc description={initially \texttt{2.0}},
+          },
+          {
+            doc name=joint radius,
+            doc description={initially \texttt{0.25}},
+          },
+        }
+        The geometrical properties of the links can be configured with these keys.
+        \begin{dispExample}
+          \robotArmLink[width=0.75,joint radius=0.4,length=5]
+        \end{dispExample}
+      \end{docKeys}
+
+      \begin{docKeys}
+        [
+          doc keypath={robotarm/link},
+          doc description={code executing key},
+        ]
+        {
+          {doc name=draw link},
+          {doc name=draw joint},
+        }
+        Same as for the base link, the actual drawing is done by calling these keys. These can also be redefined to change the drawing.
+        \begin{dispExample}
+          \robotArmLink[draw link/.code={
+            \draw[line cap=round, double=lightgray,
+              double distance=4mm]
+              (0,0) to[bend left] (2,0);}]
+        \end{dispExample}
+        Of course you can also do this globally so it applies to all links\footnote{For the end effector to change too, you have to redefine \refKey{/robotarm/end effector/draw joint} too.}.
+        \begin{dispExample}
+          \pgfkeys{/robotarm/link/draw joint/.code={
+            \path[link style] (-0.3,-0.3) rectangle ++(0.6,0.6);
+            \path[link style] (0,0) circle (0.2);}}
+          \robotArm[geometry={a=1.5},
+                    config={q1=60,q2=-30,q3=-30}]{3}
+        \end{dispExample}
+        To access the values of the keys listed above you can use the following macros in your redefinition: 
+        \begin{itemize}
+          \item \docAuxCommand{RA@link@width},
+          \item \docAuxCommand{RA@link@length}, and
+          \item \docAuxCommand{RA@link@jointradius}.
+        \end{itemize}
+      \end{docKeys}
+
+    \end{docCommand}
+
+  \subsection{\texttt{robotArmEndEffector}}
+
+    \begin{docCommand}{robotArmEndEffector}{\oarg{key-value list}}
+      This command is used in \refCom{robotArm} to draw the final link with the end effector attached. You can also use it outside that command to draw your own end effector.
+      \begin{dispExample}
+        \robotArmEndEffector
+      \end{dispExample}
+      The \meta{key-value list} can consist of the keys listed below.
+
+      \begin{docKeys}
+        [
+          doc keypath={robotarm/end effector},
+          doc parameter={=\meta{value}},
+        ]
+        {
+          {
+            doc name=width,
+            doc description={initially \texttt{0.4}},
+          },
+          {
+            doc name=length,
+            doc description={initially \texttt{2.0}},
+          },
+          {
+            doc name=joint radius,
+            doc description={initially \texttt{0.25}},
+          },
+          {
+            doc name=gripper radius,
+            doc description={initially \texttt{0.3}},
+          },
+          {
+            doc name=gripper opening angle,
+            doc description={initially \texttt{60}},
+            doc parameter={=\meta{angle}},
+          },
+        }
+        The geometrical properties of the final link and the end effector, which defaults to a gripper, can be tuned with these keys. Due to some trigonometric functions in the drawing code of \refKey{/robotarm/end effector/draw end effector}, \refKey{/robotarm/end effector/gripper radius} should not be smaller than half of \refKey{/robotarm/end effector/width}.
+
+      \end{docKeys}
+
+      \begin{docKeys}
+        [
+          doc keypath={robotarm/end effector},
+          doc description={code executing key},
+        ]
+        {
+          {doc name=draw link},
+          {doc name=draw joint},
+          {doc name=draw end effector},
+        }
+        Again the actual drawing is done by calling these keys. And these can also be redefined to change how the end effector will look, as shown in the example below.
+        \begin{dispExample}
+          \robotArm[
+            config={q1=100,q2=-100},
+            end effector/.cd,
+            draw link/.code={
+              \draw[line cap=round, double=lightgray,
+                    double distance=4mm]
+                (0,0) to[bend left]  (2, 0.8);},
+            draw end effector/.code={
+              \path[link style]
+                (1.8, 0.8) arc (180:0:0.2) -- (2.1, 0.4)
+                -- (1.9, 0.4) --  cycle;
+              \path[link style]
+                (2.05,0.4) rectangle (1.95,0.0);
+              \fill (2,0) circle (0.05);}]{2}
+        \end{dispExample}
+        To access the values of the keys listed above you can use the following macros in your redefinition: 
+        \begin{itemize}
+          \item \docAuxCommand{RA@endeff@width},
+          \item \docAuxCommand{RA@endeff@length},
+          \item \docAuxCommand{RA@endeff@jointradius},
+          \item \docAuxCommand{RA@endeff@gripperradius}, and
+          \item \docAuxCommand{RA@endeff@gripperopeningangle}.
+        \end{itemize}
+      \end{docKeys}
+
+    \end{docCommand}
+
+\section{\Tikz styles}
+
+  \begin{docKeys}
+    [
+      doc keypath=tikz,
+      doc description=style,
+    ]
+    {
+      {
+        doc name=in link,
+        doc parameter={=\meta{number}},
+      },
+      {
+        doc name=in base link,
+      },
+      {
+        doc name=in world,
+      },
+      {
+        doc name=in end effector,
+      }
+    }
+    Only installed after calling \refCom{robotArm} at least once (last called macro defines these styles, but within scope can be made unique).
+  \end{docKeys}
+
+  \begin{docKey}[tikz]{link style}{}{default \texttt{/robotarm/styles/link}}
+    Always installed, forwards to \refKey{/robotarm/styles/link}. Only works one way. To change link styles used in \refCom{robotArm}, change the appropriate \refKey{/robotarm/styles/link}.
+    \begin{dispExample}
+      \tikzset{link style/.style={draw=none, fill=red!50}}
+      \robotArm[config={q1=40},styles={
+        link 1/.style={fill=blue!50}}]{3}
+    \end{dispExample}
+  \end{docKey}
+
+
+  %^^A \section{\robotarmpackage keys}
+  %^^A \begin{docKeys}
+  %^^A [
+  %^^A   doc keypath=robotarm/annotations/labels,
+  %^^A ]{
+  %^^A   {
+  %^^A     doc name=a,
+  %^^A     doc description={no default, initially \texttt{a}},
+  %^^A   },
+  %^^A   {
+  %^^A     doc name=q,
+  %^^A     doc description={no default, initially \texttt{q}},
+  %^^A   }
+  %^^A }
+  %^^A \begin{dispExample}
+  %^^A   \robotArm[
+  %^^A     config={q1=60,q2=-40,q3=40},
+  %^^A     annotations/labels/a=l,
+  %^^A     annotations/labels/q=\theta,
+  %^^A     annotations/labels/q3=?]{3}
+  %^^A \end{dispExample}
+  %^^A \end{docKeys}
+
+  %^^A \section{\Tikz keys}
+
+
+  %^^A \begin{docKeys}
+  %^^A [
+  %^^A   doc keypath=robotarm/frames,
+  %^^A   doc description={style},
+  %^^A ]{
+  %^^A   {doc name=in link 0},
+  %^^A   {doc name=in link 1},
+  %^^A   {doc name=in link 2},
+  %^^A   {doc name=in link 3},
+  %^^A   {doc name=in link 4},
+  %^^A   {doc name=in link 5},
+  %^^A   {doc name=in link 6}
+  %^^A }
+  %^^A \end{docKeys}
+
+
+%</robotarm-doc-main>
+%
+%<*robotarm-doc-bib>
+@manual{tantau:tikz_and_pgf,
+   author    = {Till Tantau},
+   title     = {The TikZ and PGF Packages},
+   subtitle  = {Manual for version 3.1.8b},
+   url       = {https://mirrors.ctan.org/graphics/pgf/base/doc/pgfmanual.pdf},
+   date      = {2021-03-19},
+}
+%</robotarm-doc-bib>
+%
+% \fi
+%
+% \CheckSum{286}
+%
+% \CharacterTable
+%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%   Digits        \0\1\2\3\4\5\6\7\8\9
+%   Exclamation   \!     Double quote \"     Hash (number) \#
+%   Dollar        \$     Percent      \%     Ampersand     \&
+%   Acute accent  \'     Left paren   \(     Right paren   \)
+%   Asterisk      \*     Plus         \+     Comma         \,
+%   Minus         \-     Point        \.     Solidus       \/
+%   Colon         \:     Semicolon    \;     Less than     \<
+%   Equals        \=     Greater than \>     Question mark \?
+%   Commercial at \@     Left bracket \[     Backslash     \\
+%   Right bracket \]     Circumflex   \^     Underscore    \_
+%   Grave accent  \`     Left brace   \{     Vertical bar  \|
+%   Right brace   \}     Tilde        \~}
+%
+%
+% \DoNotIndex{\angleannotationcase,\link@angleannotspacing,\begin,\begingroup,\DeclareDocumentCommand,\draw,\end,\endgroup,\fi,\foreach,\ifcase,\ifnum,\ifRA@robotarm@drawannotations,\lenghtannotationspacing,\link@lenght,\link@radius,\link@startangle,\link@width,\lengthannotationspacing,\link@length,\link@case}
+%
+% \changes{v0.1}{2022/03/08}{Initial version for publishing}
+%
+% \GetFileInfo{robotarm.sty}
+%
+% \input{robotarm.doc.main.tex}
+%
+% \StopEventually{\printbibliography[heading=robotarmbibheading]\printindex\PrintChanges}
+%
+% \section{Implementation}
+%    \begin{macrocode}
+%<*robotarm-package>
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{robotarm}
+  [2022/03/08 v0.1 Tikz commands to draw planar robot arms]
+
+\RequirePackage{tikz}
+
+\usetikzlibrary{patterns}
+
+\makeatletter
+
+\newif\ifRA@robotarm@drawannotations
+
+\pgfkeys{
+  /robotarm/base link/.cd,
+    width/.code={\pgfmathsetmacro\RA@baselink@width{#1}},
+    width=0.6,
+    height/.code={\pgfmathsetmacro\RA@baselink@height{#1}},
+    height=0.3,
+    world width/.code={\pgfmathsetmacro\RA@baselink@worldwidth{#1}},
+    world width=1.0,
+    world height/.code={\pgfmathsetmacro\RA@baselink@worldheight{#1}},
+    world height=0.3,
+    draw base link/.code={%
+      \path[link style]
+        (-1/2*\RA@baselink@width,0)
+        arc (180:0:1/2*\RA@baselink@width)
+        -- ++ (0, -\RA@baselink@height)
+        -- ++ (-\RA@baselink@width, 0)
+        -- cycle;
+    },
+    draw world/.code={%
+      \path[world style]
+        (-1/2*\RA@baselink@worldwidth,-\RA@baselink@height)
+        arc (180:360:{1/2*\RA@baselink@worldwidth} 
+          and {\RA@baselink@worldheight}) -- cycle;
+      \path[draw, world style]
+        (-1/2*\RA@baselink@worldwidth,-\RA@baselink@height)
+        -- ++(\RA@baselink@worldwidth,0);
+    },
+  /robotarm/link/.cd,
+    width/.code={\pgfmathsetmacro\RA@link@width{#1}},
+    width=0.4,
+    length/.code={\pgfmathsetmacro\RA@link@length{#1}},
+    length=2.0,
+    joint radius/.code={\pgfmathsetmacro\RA@link@jointradius{#1}},
+    joint radius=0.25,
+    draw link/.code={%
+      \path[link style]
+        (0,1/2*\RA@link@width)
+        -- ++ ( \RA@link@length, 0)
+        arc (90:-90:1/2*\RA@link@width)
+        -- ++ (-\RA@link@length, 0)
+        arc (270:90:1/2*\RA@link@width)
+        -- cycle;
+    },
+    draw joint/.code={%
+      \path[link style]
+        (0,0) circle (\RA@link@jointradius);
+      \path[link style]
+        (0,0) circle (1/3*\RA@link@jointradius);
+    },
+  /robotarm/end effector/.cd,
+    width/.code={\pgfmathsetmacro\RA@endeff@width{#1}},
+    width=0.4,
+    length/.code={\pgfmathsetmacro\RA@endeff@length{#1}},
+    length=2,
+    joint radius/.code={\pgfmathsetmacro\RA@endeff@jointradius{#1}},
+    joint radius=0.25,
+    gripper radius/.code={\pgfmathsetmacro\RA@endeff@gripperradius{#1}},
+    gripper radius=0.3,
+    gripper opening angle/.code={%
+      \pgfmathsetmacro\RA@endeff@gripperopeningangle{#1}},
+    gripper opening angle=60,
+    draw joint/.code={%
+      \path[link style]
+        (0,0) circle (\RA@endeff@jointradius);
+      \path[link style]
+        (0,0) circle (1/3*\RA@endeff@jointradius);
+    },
+    draw link/.code={%
+      \pgfmathsetmacro{\link@startangle}{%
+        180-asin(1/2*\RA@endeff@width/\RA@endeff@gripperradius)}
+      \pgfmathsetmacro{\link@endangle}{%
+        180+asin(1/2*\RA@endeff@width/\RA@endeff@gripperradius)}
+
+      \path[link style]
+        (\RA@endeff@length, 0)
+        ++ (\link@startangle:\RA@endeff@gripperradius)
+        arc (\link@startangle:\link@endangle:\RA@endeff@gripperradius)
+        -- (0,0|-0,-1/2*\RA@endeff@width)
+        arc (-90:90:1/2*\RA@endeff@width)
+        -- cycle;
+    },
+    draw end effector/.code={
+      \draw[link style]
+        (\RA@endeff@length, 0)
+        ++ (-1/2*\RA@endeff@gripperopeningangle:%
+            \RA@endeff@gripperradius)
+        arc [start angle=-1/2*\RA@endeff@gripperopeningangle,
+             delta angle=-360+\RA@endeff@gripperopeningangle,
+             radius=\RA@endeff@gripperradius]
+        -- ++(180+1/2*\RA@endeff@gripperopeningangle:%
+              0.4*\RA@endeff@gripperradius)
+        arc [start angle=1/2*\RA@endeff@gripperopeningangle,
+             delta angle=360-\RA@endeff@gripperopeningangle,
+             radius=0.6*\RA@endeff@gripperradius]
+        -- ++(-1/2*\RA@endeff@gripperopeningangle:%
+              0.4*\RA@endeff@gripperradius)
+        -- cycle;
+    },
+  /robotarm/.cd,
+    draw annotations/.is if=RA@robotarm@drawannotations,
+    draw annotations=true,
+    every annotation/.style={},
+    every length annotation/.style={},
+    every length annotation arrow/.style={draw,->},
+    every length annotation node/.style={circle,inner sep=0.5pt},
+    every length annotation help line/.style={draw,help lines},
+    every angle annotation/.style={},
+    every angle annotation arrow/.style={draw,->},
+    every angle annotation node/.style={},
+    every angle annotation help line/.style={draw,help lines},
+    base link/.code=\pgfkeys{/robotarm/base link/.cd,#1},
+    link/.code=\pgfkeys{/robotarm/link/.cd,#1},
+    end effector/.code=\pgfkeys{/robotarm/end effector/.cd,#1},
+    geometry/.code=\pgfkeys{/robotarm/geometry/.cd,#1},
+    config/.code=\pgfkeys{/robotarm/config/.cd,#1},
+    spacing/.code=\pgfkeys{/robotarm/annotations/spacing/.cd,#1},
+    labels/.code=\pgfkeys{/robotarm/annotations/labels/.cd,#1},
+    styles/.code=\pgfkeys{/robotarm/styles/.cd,#1},
+  /robotarm/geometry/.cd,
+    a0/.initial=0,
+    a/.initial=2,
+    r/.initial=0.25,
+    w/.initial=0.4,
+  /robotarm/config/q/.initial=0,
+  /robotarm/frames/.cd,
+    in link 0/.style={},
+    in end effector/.style={
+      /robotarm/frames/in link \RA@robotarm@numlinks,
+      shift={%
+        (\pgfkeysvalueof{/robotarm/geometry/a\RA@robotarm@numlinks},0)},
+    },
+    in world/.style={
+      shift={(0,-\RA@baselink@height)}
+    },
+  /robotarm/styles/.cd,
+    world/.style={pattern=north west lines},
+    link/.style={
+      draw,
+      fill=lightgray,
+    },
+    link 0/.style={/robotarm/styles/link},
+  /robotarm/annotations/.cd,
+    spacing/.cd,
+      a/.initial=3,
+      q/.initial=1/2,
+  /robotarm/annotations/.cd,
+    labels/.cd,
+      a/.initial=a,
+      q/.initial=q,
+}
+\tikzset{
+  link style/.style={/robotarm/styles/link},
+  world style/.style={/robotarm/styles/world},
+}
+%    \end{macrocode}
+% \begin{macro}{\robotarmset}
+%    \begin{macrocode}
+\newcommand\robotarmset[1]{%
+  \pgfkeys{/robotarm/.cd,#1}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\robotArmLink}
+%    \begin{macrocode}
+\newcommand\robotArmLink[1][]{
+  \begingroup
+    \pgfkeys{/robotarm/link/.cd,#1}
+
+    \pgfkeys{/robotarm/link/draw link}
+    \pgfkeys{/robotarm/link/draw joint}
+  \endgroup
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\robotArmEndEffector}
+%    \begin{macrocode}
+\newcommand\robotArmEndEffector[1][]{
+  \begingroup
+    \pgfkeys{/robotarm/end effector/.cd,#1}
+
+    \pgfkeys{/robotarm/end effector/draw link}
+    \pgfkeys{/robotarm/end effector/draw joint}
+    \pgfkeys{/robotarm/end effector/draw end effector}
+
+  \endgroup
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\robotArmBaseLink}
+%    \begin{macrocode}
+\newcommand\robotArmBaseLink[1][]{
+  \begingroup
+    \pgfkeys{/robotarm/base link/.cd,#1}
+
+    \pgfkeys{/robotarm/base link/draw world}
+    \pgfkeys{/robotarm/base link/draw base link}
+  \endgroup
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\robotArm}
+%    \begin{macrocode}
+\newcommand\robotArm[2][]{
+  \pgfmathtruncatemacro\RA@robotarm@numlinks{#2}
+  \def\@tmpkeys{}
+  \foreach \@link [remember=\@link as \@prevlink (initially 0)] in %
+    {1,...,\RA@robotarm@numlinks}{
+    \xdef\@tmpkeys{\@tmpkeys%
+      /robotarm/geometry/a\@link/.initial=%
+        \pgfkeysvalueof{/robotarm/geometry/a},%
+      /robotarm/geometry/r\@link/.initial=%
+        \pgfkeysvalueof{/robotarm/geometry/r},%
+      /robotarm/geometry/w\@link/.initial=%
+        \pgfkeysvalueof{/robotarm/geometry/w},%
+      /robotarm/config/q\@link/.initial=%
+        \pgfkeysvalueof{/robotarm/config/q},%
+      /robotarm/styles/link \@link/.style={/robotarm/styles/link},%
+      /robotarm/annotations/labels/a\@link/.initial={%
+        $\pgfkeysvalueof{/robotarm/annotations/labels/a}_{\@link}$},%
+      /robotarm/annotations/labels/q\@link/.initial={%
+        $\pgfkeysvalueof{/robotarm/annotations/labels/q}_{\@link}$},%
+      /robotarm/annotations/spacing/a\@link/.initial={%
+        \pgfkeysvalueof{/robotarm/annotations/spacing/a}},%
+      /robotarm/annotations/spacing/q\@link/.initial={%
+        \pgfkeysvalueof{/robotarm/annotations/spacing/q}},%
+    }
+  }
+  \expandafter\pgfkeys\expandafter{\@tmpkeys}
+  \pgfkeys{/robotarm/.cd,#1}
+  \def\@tmpkeys{}
+  \foreach \@link [remember=\@link as \@prevlink (initially 0)] in %
+    {1,...,\RA@robotarm@numlinks}{
+    \xdef\@tmpkeys{\@tmpkeys%
+      /robotarm/frames/in link \@link/.style={%
+        /robotarm/frames/in link \@prevlink,
+        /tikz/shift={%
+          (\pgfkeysvalueof{/robotarm/geometry/a\@prevlink},0)},
+        /tikz/rotate={\pgfkeysvalueof{/robotarm/config/q\@link}},
+      },
+    }
+  }
+  \expandafter\pgfkeys\expandafter{\@tmpkeys}
+
+  \begin{scope}[/robotarm/frames/in link 0,
+                link style/.style={/robotarm/styles/link 0}]
+    \robotArmBaseLink
+  \end{scope}
+
+  \foreach\link@num in {1,...,\RA@robotarm@numlinks}{
+    \begin{scope}[/robotarm/frames/in link \link@num,
+                  link style/.style={/robotarm/styles/link \link@num}]
+
+      \ifnum\link@num<\RA@robotarm@numlinks
+        \robotArmLink[
+          joint radius=\pgfkeysvalueof{/robotarm/geometry/r\link@num},
+          length=\pgfkeysvalueof{/robotarm/geometry/a\link@num},
+          width=\pgfkeysvalueof{/robotarm/geometry/w\link@num},
+        ]
+      \else
+        \robotArmEndEffector[
+          joint radius=\pgfkeysvalueof{/robotarm/geometry/r\link@num},
+          length=\pgfkeysvalueof{/robotarm/geometry/a\link@num},
+          width=\pgfkeysvalueof{/robotarm/geometry/w\link@num},
+        ]
+      \fi
+    \end{scope}
+  }
+  \foreach\link@num in {1,...,\RA@robotarm@numlinks}{
+    \begin{scope}[/robotarm/frames/in link \link@num]
+      \pgfmathsetmacro\link@length{\pgfkeysvalueof{%
+        /robotarm/geometry/a\link@num}}
+      \pgfmathsetmacro\link@angle{\pgfkeysvalueof{%
+        /robotarm/config/q\link@num}}
+
+      \ifRA@robotarm@drawannotations
+        \pgfmathsetmacro\link@lengthannotspacing{%
+          \pgfkeysvalueof{/robotarm/annotations/spacing/a\link@num}*
+            \pgfkeysvalueof{/robotarm/geometry/r\link@num}}
+        \pgfmathsetmacro\link@angleannotspacing{%
+          \pgfkeysvalueof{/robotarm/annotations/spacing/q\link@num}*
+            \link@length}
+
+        % Length annotation help lines
+        \path[/robotarm/every annotation,
+              /robotarm/every length annotation,
+              /robotarm/every length annotation help line]
+          (0,0) -- (\link@length,0);
+        \path[/robotarm/every annotation,
+              /robotarm/every length annotation,
+              /robotarm/every length annotation help line]
+          (0,0) -- ++ (0,{\link@lengthannotspacing +
+            0.1*sign(\link@lengthannotspacing)});
+        \path[/robotarm/every annotation,
+              /robotarm/every length annotation,
+              /robotarm/every length annotation help line]
+          (\link@length,0) -- ++ (0,{\link@lengthannotspacing +
+            0.1*sign(\link@lengthannotspacing)});
+%    \end{macrocode}
+% Length annotation node
+%    \begin{macrocode}
+        \path (0,\link@lengthannotspacing)
+          -- coordinate[pos=0.5] (coor) ++ (\link@length,0);
+        \node[/robotarm/every annotation,
+              /robotarm/every length annotation,
+              /robotarm/every length annotation node]
+          at (coor) (tag)
+          {\pgfkeysvalueof{/robotarm/annotations/labels/a\link@num}};
+%    \end{macrocode}
+% Length annotation arrows
+%    \begin{macrocode}
+        \path[/robotarm/every annotation,
+              /robotarm/every length annotation,
+              /robotarm/every length annotation arrow]
+          (tag) -- (0,\link@lengthannotspacing);
+        \path[/robotarm/every annotation,
+              /robotarm/every length annotation,
+              /robotarm/every length annotation arrow]
+          (tag) -- (\link@length,\link@lengthannotspacing);
+
+        \pgfmathsetmacro\angleannotationcase{%
+          ifthenelse(\link@angle==0.0, 0, 1)}
+        \ifnum\angleannotationcase>0
+          % Angle annotation help lines
+          \path[/robotarm/every annotation,
+                /robotarm/every angle annotation,
+                /robotarm/every angle annotation help line]
+            (0,0) -- ++(-\link@angle:{\link@angleannotspacing+0.1});
+          \path[/robotarm/every annotation,
+                /robotarm/every angle annotation,
+                /robotarm/every angle annotation help line]
+            (0,0) -- ++(0:{\link@angleannotspacing+0.1});
+
+          % Angle annotation arrow
+          \path[/robotarm/every annotation,
+                /robotarm/every angle annotation,
+                /robotarm/every angle annotation arrow]
+            (0,0) ++ (-\link@angle:\link@angleannotspacing)
+            arc (-\link@angle:0:\link@angleannotspacing);
+
+          % Angle annotation node
+          \node[/robotarm/every annotation,
+                /robotarm/every angle annotation,
+                /robotarm/every angle annotation node]
+            at (-\link@angle/2:\link@angleannotspacing+0.3)
+            {\pgfkeysvalueof{/robotarm/annotations/labels/q\link@num}};
+        \fi
+      \fi
+    \end{scope}
+  }
+%    \end{macrocode}
+%   Install \Tikz styles for coordinate transformations.
+%    \begin{macrocode}
+  \tikzset{
+    in link/.style={/robotarm/frames/in link #1},
+    in base link/.style={/robotarm/frames/in link 0},
+    in end effector/.style={/robotarm/frames/in end effector},
+    in world/.style={/robotarm/frames/in world},
+  }
+}
+%    \end{macrocode}
+% \end{macro}
+%    \begin{macrocode}
+\makeatother
+%</robotarm-package>
+%    \end{macrocode}
+% \Finale
+\endinput
