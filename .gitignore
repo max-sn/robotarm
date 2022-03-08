@@ -1,0 +1,27 @@
+# Editor directories
+.vscode
+
+# Auxilliary generated files and directories
+_minted*
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.glo
+*.gls
+*.hd
+*.idx
+*.ilg
+*.ind
+*.log
+*.out
+*.pdf
+*.run.xml
+*.tcbtemp
+*.toc
+
+# Specific generated files
+robotarm.doc.bib.bib
+robotarm.doc.main.tex
+robotarm.doc.settings.sty
+robotarm.sty
