@@ -25,3 +25,6 @@ robotarm.doc.bib.bib
 robotarm.doc.main.tex
 robotarm.doc.settings.sty
 robotarm.sty
+
+# Releases
+robotarm-v*.zip
