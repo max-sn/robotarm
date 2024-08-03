@@ -1,0 +1,22 @@
+{
+    // "image": "texlive/texlive:latest-full",
+    "build": {
+        "dockerfile": "./Dockerfile",
+        "context": ".."
+    },
+    "name": "LaTeX",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "james-yu.latex-workshop",
+                "stkb.rewrap",
+                "jeff-hykin.code-eol",
+                "Gruntfuggly.todo-tree",
+                "streetsidesoftware.code-spell-checker"
+            ],
+            "settings": {
+                "files.trimTrailingWhitespace": true
+            }
+        }
+    }
+}
